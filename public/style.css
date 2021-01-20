@@ -1,0 +1,41 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+}
+
+/*GENERAL*/
+
+body {
+    background-color: rgb(56, 56, 56);
+    color: rgb(95, 255, 80);
+}
+
+::selection {
+    background: lightgreen;
+    color: white;
+}
+
+header,
+main,
+footer {
+    padding: 5px 30px;
+}
+
+header {
+    width: 100%;
+    background: rgb(14, 14, 14);
+    margin-bottom: 50px;
+}
+
+footer {
+    margin-top: 50px;
+    /* clear: both; */
+}
+
+/* DIVS */
+
+canvas {
+    height: 100px;
+    width: 200px;
+    background: rgb(223, 216, 161);
+}
