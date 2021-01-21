@@ -14,17 +14,14 @@ app.use(cookieParser());
 
 app.use(express.static("./public"));
 
-app.get("/", (req, res) => res.redirect("/petition"));
-
-// app.get("./actors", (req, res) => {
-//     db.getActors()
-//         .then((results) => {
-//             console.log("results from getActors: ", results);
-//         })
-//         .catch((err) => {
-//             console.log("ERROR in GET: ", err);
-//         });
+// app.use((req, res, next) => {
+//     if (!req.cookies["petition-signed"]) {
+//         return res.redirect("/petition");
+//     }
+//     next();
 // });
+
+app.get("/", (req, res) => res.redirect("/petition"));
 
 app.get("/petition", (req, res) => {
     if (req.cookies["petition-signed"]) {
@@ -49,18 +46,23 @@ app.post("/petition", (req, res) => {
     console.log("♦ POST req was made!");
     console.log("♦♦ POST req body: ", req.body);
 
-    const firstName = req.body.fname;
-    const lastName = req.body.lname;
-    // const signature = ;
+    const firstName = req.body["fname"];
+    const lastName = req.body["lname"];
+    const signature = "XXX";
 
-    db.formEnter(firstName, lastName)
-        .then((results) => {
-            console.log("♦♦♦ results from POST: ", results);
+    console.log(firstName, lastName, signature);
+
+    db.formEnter(firstName, lastName, signature)
+        .then(() => {
+            // console.log("♦♦♦ results from POST: ", results);
             res.cookie("petition-signed", "signed");
             res.redirect("/thanks");
+            return;
         })
         .catch((err) => {
             console.log("ERROR in POST: ", err);
+            res.redirect("/petition");
+            return;
         });
 });
 
@@ -78,6 +80,14 @@ app.get("/signers", (req, res) => {
     if (!req.cookies["petition-signed"]) {
         res.redirect("/petition");
     } else {
+        // db.getSignatures();
+        //         .then((results) => {
+        //             console.log("results from getSignatures: ", results);
+        //         })
+        //         .catch((err) => {
+        //             console.log("ERROR in GET: ", err);
+        //         });
+
         res.render("signers", {
             layout: "main",
         });

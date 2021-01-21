@@ -6,7 +6,7 @@ module.exports.getSignatures = () => {
     return db.query(myQuery);
 };
 
-module.exports.formEnter = (firstName, lastName) => {
-    const myQuery = `INSERT INTO petition ("First Name", "Last Name") VALUES (${firstName}, ${lastName})`;
+module.exports.formEnter = (firstName, lastName, signature) => {
+    const myQuery = `INSERT INTO petition ("First Name", "Last Name", "Signature") VALUES (${firstName}, ${lastName}, ${signature})`;
     return db.query(myQuery);
 };
