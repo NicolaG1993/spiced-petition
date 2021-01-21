@@ -48,17 +48,12 @@ app.post("/petition", (req, res) => {
 
     const firstName = req.body.fname;
     const lastName = req.body.lname;
-    const signature = req.body.signature.value;
+    const signature = req.body.signature;
 
     db.formEnter(firstName, lastName, signature)
         .then(() => {
             // console.log("♦♦♦ results from POST: ", results);
-            console.log(
-                "♦♦♦ POST adding data to db: ",
-                firstName,
-                lastName,
-                signature
-            );
+            console.log("♦♦♦ POST adding data to db: ");
             res.cookie("petition-signed", "signed");
             res.redirect("/thanks");
             // return;
@@ -77,17 +72,18 @@ app.get("/thanks", (req, res) => {
 });
 
 app.get("/signers", (req, res) => {
-    // db.getSignatures();
-    //         .then((results) => {
-    //             console.log("results from getSignatures: ", results);
-    //         })
-    //         .catch((err) => {
-    //             console.log("ERROR in GET: ", err);
-    //         });
-
-    res.render("signers", {
-        layout: "main",
-    });
+    db.getSignatures()
+        .then((results) => {
+            console.log("results from getSignatures: ", results);
+            let signatures = results["rows"];
+            res.render("signers", {
+                layout: "main",
+                signatures,
+            });
+        })
+        .catch((err) => {
+            console.log("ERROR in GET: ", err);
+        });
 });
 
 app.listen(8080, () => console.log("...Server is listening..."));

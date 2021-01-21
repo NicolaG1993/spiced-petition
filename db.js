@@ -2,7 +2,7 @@ const spicedPg = require("spiced-pg");
 const db = spicedPg("postgres:postgres:postgres@localhost:5432/petition");
 
 module.exports.getSignatures = () => {
-    const myQuery = `SELECT * FORM petition`;
+    const myQuery = `SELECT * FROM petition`;
     return db.query(myQuery);
 };
 
