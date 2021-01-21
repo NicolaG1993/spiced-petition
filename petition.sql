@@ -8,5 +8,5 @@ CREATE TABLE petition (
 );
 
 
--- INSERT INTO petition ("Name", "Age", "Number of Oscars") 
+-- INSERT INTO petition ("First Name", "Last Name", "Signature") 
 -- VALUES ('Leonardo DiCaprio', 41, 1);

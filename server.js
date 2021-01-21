@@ -9,6 +9,9 @@ const hb = require("express-handlebars");
 app.engine("handlebars", hb());
 app.set("view engine", "handlebars");
 
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+
 app.use(express.static("./public"));
 
 app.get("/", (req, res) => res.redirect("/petition"));
@@ -43,10 +46,25 @@ app.get("/petition", (req, res) => {
 });
 
 app.post("/petition", (req, res) => {
-    res.cookie("petition-signed", "signed");
+    console.log("♦ POST req was made!");
+    console.log("♦♦ POST req body: ", req.body);
+
+    const firstName = req.body.fname;
+    const lastName = req.body.lname;
+    // const signature = ;
+
+    db.formEnter(firstName, lastName)
+        .then((results) => {
+            console.log("♦♦♦ results from POST: ", results);
+            res.cookie("petition-signed", "signed");
+            res.redirect("/thanks");
+        })
+        .catch((err) => {
+            console.log("ERROR in POST: ", err);
+        });
 });
 
-app.post("/thanks", (req, res) => {
+app.get("/thanks", (req, res) => {
     if (!req.cookies["petition-signed"]) {
         res.redirect("/petition");
     } else {
@@ -60,6 +78,9 @@ app.get("/signers", (req, res) => {
     if (!req.cookies["petition-signed"]) {
         res.redirect("/petition");
     } else {
+        res.render("signers", {
+            layout: "main",
+        });
     }
 });
 

@@ -6,7 +6,7 @@ module.exports.getSignatures = () => {
     return db.query(myQuery);
 };
 
-// module.exports.getActors = () => {
-//     const myQuery = `SELECT * FORM actors`;
-//     return db.query(myQuery);
-// };
+module.exports.formEnter = (firstName, lastName) => {
+    const myQuery = `INSERT INTO petition ("First Name", "Last Name") VALUES (${firstName}, ${lastName})`;
+    return db.query(myQuery);
+};
