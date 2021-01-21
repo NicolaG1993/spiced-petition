@@ -48,7 +48,7 @@ app.post("/petition", (req, res) => {
 
     const firstName = req.body.fname;
     const lastName = req.body.lname;
-    const signature = "XXX";
+    const signature = req.body.signature.value;
 
     db.formEnter(firstName, lastName, signature)
         .then(() => {

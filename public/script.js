@@ -24,12 +24,12 @@ draw = (e) => {
 };
 
 canvas.on("mousedown", (e) => {
-    console.log("mousedown!");
+    // console.log("mousedown!");
     draw(e);
 });
 canvas.on("mousemove", (e) => {
     if (isDrawing === true) {
-        console.log("mousemove!");
+        // console.log("mousemove!");
         drawing(picture, x, y, e.offsetX, e.offsetY);
         x = e.offsetX;
         y = e.offsetY;
@@ -37,10 +37,15 @@ canvas.on("mousemove", (e) => {
 });
 $(window).on("mouseup", (e) => {
     if (isDrawing === true) {
-        console.log("mouseup!");
+        // console.log("mouseup!");
         drawing(picture, x, y, e.offsetX, e.offsetY);
         isDrawing = false;
         x = 0;
         y = 0;
+
+        let dataURL = canvas[0].toDataURL();
+        $("#signature").val(dataURL);
+        console.log("dataURL: ", dataURL);
+        // return dataURL;
     }
 });
