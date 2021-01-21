@@ -47,5 +47,6 @@ a:hover {
 canvas {
     height: 100px;
     width: 200px;
-    background: rgb(223, 216, 161);
+    /* background: rgb(24, 24, 24); */
+    border: 1px solid rgb(95, 255, 80);
 }
