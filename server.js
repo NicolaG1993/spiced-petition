@@ -66,9 +66,18 @@ app.post("/petition", (req, res) => {
 });
 
 app.get("/thanks", (req, res) => {
-    res.render("thanks", {
-        layout: "main",
-    });
+    db.getSignatures()
+        .then((results) => {
+            console.log("results from getSignatures: ", results);
+            let x = results["rowCount"];
+            res.render("thanks", {
+                layout: "main",
+                totalSignatures: x,
+            });
+        })
+        .catch((err) => {
+            console.log("ERROR in GET: ", err);
+        });
 });
 
 app.get("/signers", (req, res) => {
