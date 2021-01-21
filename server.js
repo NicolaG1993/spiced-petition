@@ -14,12 +14,12 @@ app.use(cookieParser());
 
 app.use(express.static("./public"));
 
-// app.use((req, res, next) => {
-//     if (!req.cookies["petition-signed"]) {
-//         return res.redirect("/petition");
-//     }
-//     next();
-// });
+app.use((req, res, next) => {
+    if (!req.cookies["petition-signed"] && req.url !== "/petition") {
+        return res.redirect("/petition");
+    }
+    next();
+});
 
 app.get("/", (req, res) => res.redirect("/petition"));
 
@@ -46,52 +46,48 @@ app.post("/petition", (req, res) => {
     console.log("♦ POST req was made!");
     console.log("♦♦ POST req body: ", req.body);
 
-    const firstName = req.body["fname"];
-    const lastName = req.body["lname"];
+    const firstName = req.body.fname;
+    const lastName = req.body.lname;
     const signature = "XXX";
-
-    console.log(firstName, lastName, signature);
 
     db.formEnter(firstName, lastName, signature)
         .then(() => {
             // console.log("♦♦♦ results from POST: ", results);
+            console.log(
+                "♦♦♦ POST adding data to db: ",
+                firstName,
+                lastName,
+                signature
+            );
             res.cookie("petition-signed", "signed");
             res.redirect("/thanks");
-            return;
+            // return;
         })
         .catch((err) => {
             console.log("ERROR in POST: ", err);
             res.redirect("/petition");
-            return;
+            // return;
         });
 });
 
 app.get("/thanks", (req, res) => {
-    if (!req.cookies["petition-signed"]) {
-        res.redirect("/petition");
-    } else {
-        res.render("thanks", {
-            layout: "main",
-        });
-    }
+    res.render("thanks", {
+        layout: "main",
+    });
 });
 
 app.get("/signers", (req, res) => {
-    if (!req.cookies["petition-signed"]) {
-        res.redirect("/petition");
-    } else {
-        // db.getSignatures();
-        //         .then((results) => {
-        //             console.log("results from getSignatures: ", results);
-        //         })
-        //         .catch((err) => {
-        //             console.log("ERROR in GET: ", err);
-        //         });
+    // db.getSignatures();
+    //         .then((results) => {
+    //             console.log("results from getSignatures: ", results);
+    //         })
+    //         .catch((err) => {
+    //             console.log("ERROR in GET: ", err);
+    //         });
 
-        res.render("signers", {
-            layout: "main",
-        });
-    }
+    res.render("signers", {
+        layout: "main",
+    });
 });
 
 app.listen(8080, () => console.log("...Server is listening..."));
