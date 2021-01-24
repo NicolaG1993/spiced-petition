@@ -8,6 +8,7 @@
 body {
     background-color: rgb(56, 56, 56);
     color: rgb(95, 255, 80);
+    font-family: "Times New Roman", Times, serif;
 }
 
 ::selection {
@@ -30,6 +31,11 @@ header {
 footer {
     margin-top: 50px;
     /* clear: both; */
+}
+h1,
+h2,
+h3 {
+    font-family: Helvetica;
 }
 
 a {

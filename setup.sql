@@ -10,3 +10,5 @@ CREATE TABLE petition (
 
 -- INSERT INTO petition ("First Name", "Last Name", "Signature") 
 -- VALUES ('Leonardo DiCaprio', 41, 1);
+
+-- psql -d petition -f setup.sql

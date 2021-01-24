@@ -7,7 +7,13 @@ module.exports.getSignatures = () => {
 };
 
 module.exports.formEnter = (firstName, lastName, signature) => {
-    const myQuery = `INSERT INTO petition ("First Name", "Last Name", "Signature") VALUES ($1, $2, $3)`;
+    const myQuery = `INSERT INTO petition ("First Name", "Last Name", "Signature") VALUES ($1, $2, $3) RETURNING id`;
     const keys = [firstName, lastName, signature];
     return db.query(myQuery, keys);
+};
+
+module.exports.findSignature = (signature) => {
+    const myQuery = `SELECT "Signature" FROM petition WHERE id = ($1)`;
+    const key = [signature];
+    return db.query(myQuery, key);
 };
