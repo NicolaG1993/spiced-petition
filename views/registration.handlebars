@@ -1,0 +1,21 @@
+<h1>REGISTRATION IS HERE!!!</h1>
+
+<form method="post">
+    <label for="fname">First name:</label>
+    <input type="text" id="fname" name="fname" value="Giuseppe">
+    <br>
+    <label for="lname">Last name:</label>
+    <input type="text" id="lname" name="lname" value="Verdi">
+    <br>
+    <label for="email">Email:</label>
+    <input type="text" id="email" name="email" value="example@hello.org">
+    <br>
+    <label for="password">Password:</label>
+    <input type="text" id="password" name="password" value="xxx">
+    
+    
+    
+    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+    <br>
+    <input type="submit" id="submit" value="Sign up">
+</form>

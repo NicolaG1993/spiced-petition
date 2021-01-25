@@ -3,7 +3,7 @@ const app = express();
 
 // const cookieParser = require("cookie-parser"); //dont need this with cookieSesion?
 const cookieSession = require("cookie-session");
-// const csurf = require("csurf"); //csurf?
+const csurf = require("csurf"); //csurf?
 
 const db = require("./db");
 
@@ -12,8 +12,6 @@ app.engine("handlebars", hb());
 app.set("view engine", "handlebars");
 
 // app.use(cookieParser()); //dont need this with cookieSesion?
-app.use(express.urlencoded({ extended: false }));
-// app.use(csurf()); //csurf?
 
 app.use(express.static("./public"));
 
@@ -25,6 +23,9 @@ app.use(
     })
 );
 
+app.use(express.urlencoded({ extended: false }));
+app.use(csurf()); //csurf?
+
 app.use((req, res, next) => {
     if (!req.session.signatureId && req.url !== "/petition") {
         //before was: !req.cookies["petition-signed"]
@@ -34,14 +35,16 @@ app.use((req, res, next) => {
 });
 
 app.use((req, res, next) => {
+    //Clickjacking?
     res.setHeader("x-frame-options", "deny");
     next();
 });
 
-// app.use((req, res, next) => { //csurf?
-//     res.locals.csrfToken = req.csrfToken();
-//     next();
-// });
+app.use((req, res, next) => {
+    //csurf?
+    res.locals.csrfToken = req.csrfToken();
+    next();
+});
 
 app.get("/", (req, res) => res.redirect("/petition"));
 
@@ -86,7 +89,7 @@ app.get("/thanks", (req, res) => {
         .then((results) => {
             db.findSignature(req.session.signatureId).then(() => {
                 console.log("signer id: ", req.session.signatureId);
-                console.log("TEST: ", results.rows);
+                console.log("all signers: ", results.rows);
                 // console.log("results from getSignatures: ", results);
                 let x = results["rowCount"];
                 let id = req.session.signatureId - 1; //il mio id parte da 2 , why?
@@ -118,10 +121,52 @@ app.get("/signers", (req, res) => {
         });
 });
 
+app.get("/register", (req, res) => {
+    res.render("registration", {
+        layout: "main",
+    });
+});
+
+app.post("/register", (req, res) => {
+    const firstName = req.body.fname;
+    const lastName = req.body.lname;
+    const email = req.body.email;
+    const password = req.body.password;
+    // hash the password that the user typed and THEN
+    // insert a row in the USERS table (new table) -> see 3. for table structure
+
+    db.userRegistration(firstName, lastName, email, password)
+        .then()
+        .catch((err) => {
+            console.log("ERROR in POST: ", err);
+            res.redirect("/register");
+        });
+});
+
+app.get("/login", (req, res) => {
+    res.render("login", {
+        layout: "main",
+    });
+});
+
+app.post("/login", (req, res) => {
+    const email = req.body.email;
+    const password = req.body.password;
+
+    db.userRegistration(email, password)
+        .then()
+        .catch((err) => {
+            console.log("ERROR in POST: ", err);
+            res.redirect("/login");
+        });
+});
+
 app.listen(8080, () => console.log("...Server is listening..."));
 
 /*
 PUNTI NON CHIARI:
 /thanks route -> perché il mio id non funziona normalmente? -1
 csurf -> non funziona (ERR: misconfigured csrf)
+secret.json ?
+returning possible errors
 */
