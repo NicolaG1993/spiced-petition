@@ -28,13 +28,20 @@ app.use(
 app.use(express.urlencoded({ extended: false }));
 app.use(csurf()); //csurf?
 
+// app.use((req, res, next) => {
+//     if (
+//         !req.session.signatureId
+//         && req.url !== "/register" &&
+//         req.url !== "/login"
+//     ) {
+//         //before was: !req.cookies["petition-signed"]
+//         return res.redirect("/register");
+//     }
+//     next();
+// });
+
 app.use((req, res, next) => {
-    if (
-        !req.session.signatureId &&
-        req.url !== "/register" &&
-        req.url !== "/login"
-    ) {
-        //before was: !req.cookies["petition-signed"]
+    if (!req.session.userId && req.url !== "/register") {
         return res.redirect("/register");
     }
     next();
@@ -52,80 +59,11 @@ app.use((req, res, next) => {
     next();
 });
 
+//////////////////////////
+////// CREATE USER: //////
+//////////////////////////
+
 app.get("/", (req, res) => res.redirect("/register"));
-
-app.get("/petition", (req, res) => {
-    if (req.session.signatureId) {
-        //req.cookies["petition-signed"]
-        res.redirect("/thanks");
-    } else {
-        res.render("petition", {
-            layout: "main",
-        });
-    }
-});
-
-app.post("/petition", (req, res) => {
-    console.log("♦ POST req was made!");
-    console.log("♦♦ POST req body: ", req.body);
-
-    // const firstName = req.body.fname;
-    // const lastName = req.body.lname;
-    const signature = req.body.signature;
-
-    db.formEnter(signature)
-        .then((results) => {
-            // console.log("♦♦♦ results from POST: ", results);
-            console.log("♦♦♦ POST adding data to db: ");
-            req.session.signatureId = results.rows[0].id;
-            console.log("signer id: ", req.session.signatureId);
-            // res.cookie("petition-signed", "signed");
-            res.redirect("/thanks");
-            // return;
-        })
-        .catch((err) => {
-            console.log("ERROR in POST: ", err);
-            res.redirect("/petition");
-            // return;
-        });
-});
-
-app.get("/thanks", (req, res) => {
-    db.getSignatures()
-        .then((results) => {
-            db.findSignature(req.session.signatureId).then(() => {
-                console.log("signer id: ", req.session.signatureId);
-                console.log("all signers: ", results.rows);
-                // console.log("results from getSignatures: ", results);
-                let x = results["rowCount"];
-                let id = req.session.signatureId - 1; //il mio id parte da 2 , why?
-                res.render("thanks", {
-                    layout: "main",
-                    totalSignatures: x,
-                    userSign: results.rows[id]["Signature"],
-                });
-            });
-        })
-
-        .catch((err) => {
-            console.log("ERROR in GET: ", err);
-        });
-});
-
-app.get("/signers", (req, res) => {
-    db.getSignatures()
-        .then((results) => {
-            console.log("results from getSignatures: ", results);
-            let signatures = results["rows"];
-            res.render("signers", {
-                layout: "main",
-                signatures,
-            });
-        })
-        .catch((err) => {
-            console.log("ERROR in GET: ", err);
-        });
-});
 
 app.get("/register", (req, res) => {
     res.render("registration", {
@@ -138,25 +76,29 @@ app.post("/register", (req, res) => {
     const lastName = req.body.lname;
     const email = req.body.email;
     const password = req.body.password;
-    // hash the password that the user typed and THEN
-    // insert a row in the USERS table (new table) -> see 3. for table structure
 
-    db.userRegistration(firstName, lastName, email, password)
-        .then()
-        .catch((err) => {
-            console.log("ERROR in POST: ", err);
-            res.redirect("/register");
-        });
-
-    hash(password)
+    bc.hash(password)
         .then((hashedPw) => {
             console.log("hashedPw in /register:", hashedPw);
-            // we'll be wanting to add all user information plus the hashed PW into our db
-            // if this worked successfully we want to redirect the user
-            // if sth went wrong we want to render an error msg to our user
+
+            db.userRegistration(firstName, lastName, email, hashedPw)
+                .then((results) => {
+                    console.log("♦♦♦ POST adding data to db: ");
+                    console.log("results: ", results);
+                    req.session.userId = results.rows[0].id;
+                    res.redirect("/petition");
+                })
+                .catch((err) => {
+                    console.log("ERR in user registration: ", err);
+                    res.redirect("/register");
+                });
         })
-        .catch((err) => console.log("err in hash:", err));
+        .catch((err) => console.log("ERR in hash:", err));
 });
+
+//////////////////////////
+////// USER LOGIN: ///////
+//////////////////////////
 
 app.get("/login", (req, res) => {
     res.render("login", {
@@ -188,6 +130,92 @@ app.post("/login", (req, res) => {
         })
         .catch((err) => console.log("err in compare:", err));
     res.sendStatus(200);
+});
+
+//////////////////////////
+//////// PETITION: ////////
+//////////////////////////
+
+app.get("/petition", (req, res) => {
+    if (req.session.signatureId) {
+        //req.cookies["petition-signed"]
+        res.redirect("/thanks");
+    } else {
+        res.render("petition", {
+            layout: "main",
+        });
+    }
+});
+
+app.post("/petition", (req, res) => {
+    console.log("♦ POST req was made!");
+    console.log("♦♦ POST req body: ", req.body);
+
+    // const firstName = req.body.fname;
+    // const lastName = req.body.lname;
+    const signature = req.body.signature;
+    const userId = req.session.userId;
+
+    db.formEnter(signature, userId)
+        .then((results) => {
+            // console.log("♦♦♦ results from POST: ", results);
+            console.log("♦♦♦ POST adding data to db: ");
+            req.session.signatureId = results.rows[0].id;
+            console.log("signer id: ", req.session.signatureId);
+            // res.cookie("petition-signed", "signed");
+            res.redirect("/thanks");
+            // return;
+        })
+        .catch((err) => {
+            console.log("ERROR in POST: ", err);
+            res.redirect("/petition");
+            // return;
+        });
+});
+
+//////////////////////////
+///////// THANKS: ////////
+//////////////////////////
+
+app.get("/thanks", (req, res) => {
+    db.getSignatures()
+        .then((results) => {
+            db.findSignature(req.session.signatureId).then(() => {
+                console.log("signer id: ", req.session.signatureId);
+                console.log("all signers: ", results.rows);
+                // console.log("results from getSignatures: ", results);
+                let x = results["rowCount"];
+                let id = req.session.signatureId - 1; //il mio id parte da 2 , why?
+                res.render("thanks", {
+                    layout: "main",
+                    totalSignatures: x,
+                    userSign: results.rows[id]["Signature"],
+                });
+            });
+        })
+
+        .catch((err) => {
+            console.log("ERROR in GET: ", err);
+        });
+});
+
+//////////////////////////
+//////// SIGNERS: ////////
+//////////////////////////
+
+app.get("/signers", (req, res) => {
+    db.getSignatures()
+        .then((results) => {
+            console.log("results from getSignatures: ", results);
+            let signatures = results["rows"];
+            res.render("signers", {
+                layout: "main",
+                signatures,
+            });
+        })
+        .catch((err) => {
+            console.log("ERROR in GET: ", err);
+        });
 });
 
 app.listen(8080, () => console.log("...Server is listening..."));
