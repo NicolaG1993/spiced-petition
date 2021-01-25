@@ -1,12 +1,4 @@
-DROP TABLE IF EXISTS petition;
-
-CREATE TABLE petition (
-    id SERIAL PRIMARY KEY, 
-    "Signature" TEXT NOT NULL,
-    user_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
+DROP TABLE IF EXISTS signatures;
 DROP TABLE IF EXISTS users;
 
 CREATE TABLE users(
@@ -17,6 +9,17 @@ CREATE TABLE users(
     password VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+
+
+CREATE TABLE signatures (
+    id SERIAL PRIMARY KEY, 
+    "Signature" TEXT NOT NULL,
+    user_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
 
 
 -- INSERT INTO petition ("First Name", "Last Name", "Signature") 

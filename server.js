@@ -21,12 +21,12 @@ app.use(
     cookieSession({
         secret: secrets.secretCookie,
         // maxAge: 1000 * 60 * 60 * 24 * 14,
-        maxAge: 1000 * 20,
+        maxAge: 1000 * 60,
     })
 );
 
 app.use(express.urlencoded({ extended: false }));
-app.use(csurf()); //csurf?
+app.use(csurf());
 
 // app.use((req, res, next) => {
 //     if (
@@ -40,12 +40,12 @@ app.use(csurf()); //csurf?
 //     next();
 // });
 
-app.use((req, res, next) => {
-    if (!req.session.userId && req.url !== "/register") {
-        return res.redirect("/register");
-    }
-    next();
-});
+// app.use((req, res, next) => {
+//     if (!req.session.userId && req.url !== "/register") {
+//         return res.redirect("/register");
+//     }
+//     next();
+// });
 
 app.use((req, res, next) => {
     //Clickjacking?
@@ -66,6 +66,9 @@ app.use((req, res, next) => {
 app.get("/", (req, res) => res.redirect("/register"));
 
 app.get("/register", (req, res) => {
+    if (req.session.userId) {
+        res.redirect("/petition");
+    }
     res.render("registration", {
         layout: "main",
     });
@@ -84,7 +87,7 @@ app.post("/register", (req, res) => {
             db.userRegistration(firstName, lastName, email, hashedPw)
                 .then((results) => {
                     console.log("♦♦♦ POST adding data to db: ");
-                    console.log("results: ", results);
+                    // console.log("results: ", results);
                     req.session.userId = results.rows[0].id;
                     res.redirect("/petition");
                 })
@@ -110,26 +113,28 @@ app.post("/login", (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
 
-    db.userRegistration(email, password)
-        .then()
+    db.userLogIn(email)
+        .then((results) => {
+            const hashFromDB = results.rows[0].password;
+            console.log("results: ", results.rows[0]);
+
+            bc.compare(password, hashFromDB)
+                .then((match) => {
+                    // console.log("match value from compare:", match);
+
+                    if (match) {
+                        req.session.userId = results.rows[0].id;
+                        res.redirect("/thanks");
+                    } else {
+                        res.redirect("/login"); // deve render ERR
+                    }
+                })
+                .catch((err) => console.log("err in compare:", err));
+        })
         .catch((err) => {
             console.log("ERROR in POST: ", err);
             res.redirect("/login");
         });
-
-    // now we want to compare values
-    // you will want to go to you db, check if the email the user provided exists, and if yes retrieve the stored hash and pass that to compare are the second argument
-
-    // DO NOT DO THIS IN YOUR ACTUAL APPLICATION
-    const hashFromDB = "someHash"; // you will get an actually hashed pw from you db ;)
-    compare("whatEverTheUserClaimsToBeThePw", hashFromDB)
-        .then((match) => {
-            console.log("match value from compare:", match);
-            // if pw matches, we want to set a NEW cookie with the userId
-            // if not we want to send back an error msg, meaning rerender the login template but pass to it an error
-        })
-        .catch((err) => console.log("err in compare:", err));
-    res.sendStatus(200);
 });
 
 //////////////////////////
@@ -137,13 +142,16 @@ app.post("/login", (req, res) => {
 //////////////////////////
 
 app.get("/petition", (req, res) => {
+    console.log("PETITION req: ", req.session);
     if (req.session.signatureId) {
         //req.cookies["petition-signed"]
         res.redirect("/thanks");
-    } else {
+    } else if (req.session.userId) {
         res.render("petition", {
             layout: "main",
         });
+    } else {
+        res.redirect("/login");
     }
 });
 
@@ -151,8 +159,6 @@ app.post("/petition", (req, res) => {
     console.log("♦ POST req was made!");
     console.log("♦♦ POST req body: ", req.body);
 
-    // const firstName = req.body.fname;
-    // const lastName = req.body.lname;
     const signature = req.body.signature;
     const userId = req.session.userId;
 
@@ -178,25 +184,36 @@ app.post("/petition", (req, res) => {
 //////////////////////////
 
 app.get("/thanks", (req, res) => {
-    db.getSignatures()
-        .then((results) => {
-            db.findSignature(req.session.signatureId).then(() => {
-                console.log("signer id: ", req.session.signatureId);
-                console.log("all signers: ", results.rows);
-                // console.log("results from getSignatures: ", results);
-                let x = results["rowCount"];
-                let id = req.session.signatureId - 1; //il mio id parte da 2 , why?
-                res.render("thanks", {
-                    layout: "main",
-                    totalSignatures: x,
-                    userSign: results.rows[id]["Signature"],
-                });
-            });
-        })
+    console.log("signature id: ", req.session.signatureId);
 
-        .catch((err) => {
-            console.log("ERROR in GET: ", err);
-        });
+    if (req.session.userId) {
+        db.getSignatures()
+            .then((results) => {
+                db.findSignature(req.session.userId)
+                    .then((resultSigner) => {
+                        console.log("signer id: ", req.session.userId);
+                        console.log("all signers: ", results.rows);
+                        console.log("resultSigner: ", resultSigner);
+                        // console.log("results from getSignatures: ", results);
+                        let x = results["rowCount"];
+                        res.render("thanks", {
+                            layout: "main",
+                            totalSignatures: x,
+                            userSign: resultSigner.rows[0]["Signature"],
+                        });
+                    })
+                    .catch((err) => {
+                        console.log("ERROR in findSig: ", err);
+                        res.redirect("/petition");
+                    });
+            })
+
+            .catch((err) => {
+                console.log("ERROR in GET: ", err);
+            });
+    } else {
+        res.redirect("/login");
+    }
 });
 
 //////////////////////////
@@ -204,18 +221,22 @@ app.get("/thanks", (req, res) => {
 //////////////////////////
 
 app.get("/signers", (req, res) => {
-    db.getSignatures()
-        .then((results) => {
-            console.log("results from getSignatures: ", results);
-            let signatures = results["rows"];
-            res.render("signers", {
-                layout: "main",
-                signatures,
+    if (req.session.signatureId) {
+        db.getSignatures()
+            .then((results) => {
+                console.log("results from getSignatures: ", results);
+                let signatures = results["rows"];
+                res.render("signers", {
+                    layout: "main",
+                    signatures,
+                });
+            })
+            .catch((err) => {
+                console.log("ERROR in GET: ", err);
             });
-        })
-        .catch((err) => {
-            console.log("ERROR in GET: ", err);
-        });
+    } else {
+        res.redirect("/petition");
+    }
 });
 
 app.listen(8080, () => console.log("...Server is listening..."));
@@ -227,4 +248,5 @@ PUNTI NON CHIARI:
 should i store signatures imgs somewhere else?
 secret.json ?
 returning possible errors
+non mi é possibile checckare un doppio url nel middleware senza entrare in loop su almeno uno
 */

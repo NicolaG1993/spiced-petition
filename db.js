@@ -3,18 +3,18 @@ const db = spicedPg("postgres:postgres:postgres@localhost:5432/petition");
 
 //PETITION
 module.exports.getSignatures = () => {
-    const myQuery = `SELECT * FROM petition`;
+    const myQuery = `SELECT * FROM signatures`;
     return db.query(myQuery);
 };
 
-module.exports.formEnter = (signature, user_id) => {
-    const myQuery = `INSERT INTO petition ("Signature", user_id) VALUES ($1, $2) RETURNING id`;
-    const key = [signature, user_id];
+module.exports.formEnter = (signature, userId) => {
+    const myQuery = `INSERT INTO signatures ("Signature", user_id) VALUES ($1, $2) RETURNING id`;
+    const key = [signature, userId];
     return db.query(myQuery, key);
 };
 
 module.exports.findSignature = (signature) => {
-    const myQuery = `SELECT "Signature" FROM petition WHERE id = ($1)`;
+    const myQuery = `SELECT "Signature" FROM signatures WHERE id = ($1)`;
     const key = [signature];
     return db.query(myQuery, key);
 };
@@ -26,4 +26,8 @@ module.exports.userRegistration = (firstName, lastName, email, hashedPw) => {
     return db.query(myQuery, keys);
 };
 
-module.exports.userLogIn = () => {};
+module.exports.userLogIn = (email) => {
+    const myQuery = `SELECT * FROM users WHERE email = ($1)`;
+    const key = [email];
+    return db.query(myQuery, key);
+};
