@@ -89,7 +89,7 @@ app.post("/register", (req, res) => {
                     console.log("♦♦♦ POST adding data to db: ");
                     // console.log("results: ", results);
                     req.session.userId = results.rows[0].id;
-                    res.redirect("/petition");
+                    res.redirect("/profile");
                 })
                 .catch((err) => {
                     console.log("ERR in user registration: ", err);
@@ -209,7 +209,7 @@ app.get("/thanks", (req, res) => {
             })
 
             .catch((err) => {
-                console.log("ERROR in GET: ", err);
+                console.log("ERR in GET: ", err);
             });
     } else {
         res.redirect("/login");
@@ -232,18 +232,47 @@ app.get("/signers", (req, res) => {
                 });
             })
             .catch((err) => {
-                console.log("ERROR in GET: ", err);
+                console.log("ERR in GET: ", err);
             });
     } else {
         res.redirect("/petition");
     }
 });
 
-app.listen(8080, () => console.log("...Server is listening..."));
+//////////////////////////
+//////// PROFILE: ////////
+//////////////////////////
+app.get("/profile", (req, res) => {
+    if (req.session.userId) {
+        res.render("profile", {
+            layout: "main",
+        });
+    } else {
+        res.redirect("/login");
+    }
+});
+
+app.post("/profile", (req, res) => {
+    const age = req.body.age;
+    const city = req.session.city;
+    const url = req.session.url;
+    const userId = req.session.userId;
+
+    db.enterProfileInfos(age, city, url, userId)
+        .then(() => {
+            res.redirect("/thanks");
+        })
+        .catch((err) => {
+            console.log("ERR in POST: ", err);
+        });
+});
+
+app.listen(process.env.PORT || 8080, () =>
+    console.log("...Server is listening...")
+);
 
 /*
 PUNTI NON CHIARI:
-/thanks route -> perché il mio id non funziona normalmente? -1
 
 should i store signatures imgs somewhere else?
 secret.json ?
