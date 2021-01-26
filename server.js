@@ -7,7 +7,13 @@ const csurf = require("csurf");
 
 const db = require("./db");
 const bc = require("./bc");
-const secrets = require("./secrets");
+
+let cookie_sec;
+if (process.env.secretCookie) {
+    cookie_sec = process.env.secretCookie;
+} else {
+    cookie_sec = require("./secrets.json").secretCookie;
+}
 
 const hb = require("express-handlebars");
 app.engine("handlebars", hb());
@@ -19,7 +25,7 @@ app.use(express.static("./public"));
 
 app.use(
     cookieSession({
-        secret: secrets.secretCookie,
+        secret: cookie_sec,
         // maxAge: 1000 * 60 * 60 * 24 * 14,
         maxAge: 1000 * 60,
     })
