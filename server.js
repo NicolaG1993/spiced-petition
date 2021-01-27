@@ -331,6 +331,19 @@ app.get("/petition/thanks", (req, res) => {
     }
 });
 
+app.post("/petition/thanks", (req, res) => {
+    const userId = req.session.userId;
+
+    db.deleteSignature(userId)
+        .then(() => {
+            req.session.signatureId = null;
+            res.redirect("/petition");
+        })
+        .catch((err) => {
+            console.log("ERROR in deleteSig: ", err);
+        });
+});
+
 //////////////////////////
 ////// PETITION/SIGNERS: //////
 //////////////////////////

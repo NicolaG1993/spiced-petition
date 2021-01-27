@@ -22,6 +22,12 @@ module.exports.findSignature = (userId) => {
     return db.query(myQuery, key);
 };
 
+module.exports.deleteSignature = (userId) => {
+    const myQuery = `DELETE FROM signatures WHERE user_id = ($1)`;
+    const key = [userId];
+    return db.query(myQuery, key);
+};
+
 // USER REGISTRATION & LOGIN
 module.exports.userRegistration = (firstName, lastName, email, hashedPw) => {
     const myQuery = `INSERT INTO users ("First Name", "Last Name", email, password) VALUES ($1, $2, $3, $4) RETURNING id`;
