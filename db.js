@@ -52,6 +52,39 @@ module.exports.profileInfos = (userId) => {
     return db.query(myQuery, key);
 };
 
+module.exports.updateUser = (firstName, lastName, email, userId) => {
+    const myQuery = `UPDATE users
+    SET "First Name" = $1, "Last Name" = $2, email = $3 
+    WHERE id = ($4);`;
+
+    const keys = [firstName, lastName, email, userId];
+    return db.query(myQuery, keys);
+}; //posso scrivere set in una riga?
+
+module.exports.updateUserAndPsw = (
+    firstName,
+    lastName,
+    email,
+    hashedPw,
+    userId
+) => {
+    const myQuery = `UPDATE users
+    SET "First Name" = $1, "Last Name" = $2, email = $3, password = $4
+    WHERE id = ($5);`;
+
+    const keys = [firstName, lastName, email, hashedPw, userId];
+    return db.query(myQuery, keys);
+};
+
+module.exports.updateUserProfile = (age, city, url, userId) => {
+    const myQuery = `INSERT INTO user_profiles (age, city, url, user_id)
+    VALUES ($1, $2, $3, $4)
+    ON CONFLICT (user_id)
+    DO UPDATE SET age = $1, city = $2, url = $3`;
+    const keys = [age, city, url, userId];
+    return db.query(myQuery, keys);
+};
+
 // SIGNERS INFOS
 module.exports.getSignersInfos = () => {
     const myQuery = `SELECT "First Name", "Last Name", age, city, url

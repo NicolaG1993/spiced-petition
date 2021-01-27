@@ -180,7 +180,7 @@ app.get("/profile/edit", (req, res) => {
             .then((results) => {
                 const userInfos = results["rows"][0];
 
-                console.log("userInfos: ", userInfos);
+                // console.log("userInfos: ", userInfos);
                 res.render("editProfile", {
                     layout: "main",
                     fname: userInfos["First Name"],
@@ -199,7 +199,59 @@ app.get("/profile/edit", (req, res) => {
         res.redirect("/login");
     }
 });
-app.post("/profile/edit", (req, res) => {});
+
+app.post("/profile/edit", (req, res) => {
+    const firstName = req.body.fname;
+    const lastName = req.body.lname;
+    const email = req.body.email;
+    const password = req.body.password; //devo fare hash
+    const age = req.body.age;
+    const city = req.body.city;
+    const url = req.body.url;
+    const userId = req.session.userId;
+
+    if (password !== "") {
+        bc.hash(password)
+            .then((hashedPw) => {
+                db.updateUserAndPsw(
+                    firstName,
+                    lastName,
+                    email,
+                    hashedPw,
+                    userId
+                )
+                    .then(() => {
+                        db.updateUserProfile(age, city, url, userId)
+                            .then(() => {
+                                res.redirect("/petition");
+                            })
+                            .catch((err) => {
+                                console.log("ERR in POST2: ", err);
+                            });
+                    })
+                    .catch((err) => {
+                        console.log("ERR in POST: ", err);
+                    });
+            })
+            .catch((err) => {
+                console.log("ERR in POST: ", err);
+            });
+    } else {
+        db.updateUser(firstName, lastName, email, userId)
+            .then(() => {
+                db.updateUserProfile(age, city, url, userId)
+                    .then(() => {
+                        res.redirect("/petition");
+                    })
+                    .catch((err) => {
+                        console.log("ERR in POST2: ", err);
+                    });
+            })
+            .catch((err) => {
+                console.log("ERR in POST: ", err);
+            });
+    }
+});
 
 //////////////////////////
 //////// PETITION: ////////
