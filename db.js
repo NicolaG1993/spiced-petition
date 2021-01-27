@@ -16,9 +16,9 @@ module.exports.formEnter = (signature, userId) => {
     return db.query(myQuery, key);
 };
 
-module.exports.findSignature = (signature) => {
-    const myQuery = `SELECT "Signature" FROM signatures WHERE id = ($1)`;
-    const key = [signature];
+module.exports.findSignature = (userId) => {
+    const myQuery = `SELECT "Signature" FROM signatures WHERE user_id = ($1)`;
+    const key = [userId];
     return db.query(myQuery, key);
 };
 
@@ -36,9 +36,40 @@ module.exports.userLogIn = (email) => {
 };
 
 // USER PROFILE
-
 module.exports.enterProfileInfos = (age, city, url, userId) => {
     const myQuery = `INSERT INTO user_profiles (age, city, url, user_id) VALUES ($1, $2, $3, $4) RETURNING id`;
     const keys = [age, city, url, userId];
     return db.query(myQuery, keys);
 };
+
+module.exports.profileInfos = (userId) => {
+    const myQuery = `SELECT user_id, "First Name", "Last Name", email, age, city, url
+        FROM users
+        JOIN user_profiles
+        ON users.id = user_profiles.user_id
+        WHERE user_profiles.user_id = ($1);`;
+    const key = [userId];
+    return db.query(myQuery, key);
+};
+
+// SIGNERS INFOS
+module.exports.getSignersInfos = () => {
+    const myQuery = `SELECT "First Name", "Last Name", age, city, url
+        FROM users
+        JOIN user_profiles
+        ON users.id = user_profiles.user_id
+        JOIN signatures
+        ON users.id = signatures.user_id`;
+    return db.query(myQuery);
+};
+
+module.exports.getSignersByCity = (city) => {
+    const myQuery = `SELECT "First Name", "Last Name", age
+        FROM users
+        JOIN user_profiles
+        ON ($1) = user_profiles.city
+        WHERE LOWER(city) = LOWER($1);`;
+    const key = [city];
+    return db.query(myQuery, key);
+};
+// da finire?

@@ -2,4 +2,11 @@
 
 <img src={{userSign}} alt="signature">
 
-<a href="/signers">see all {{totalSignatures}} signatures</a>
+<a href="/petition/signers">see all {{totalSignatures}} signatures</a>
+<a href="/profile/edit">edit your profile</a>
+
+<form method="post">
+    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+    <br>
+    <input type="submit" id="submit" value="Delete your signature">
+</form>

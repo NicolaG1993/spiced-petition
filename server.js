@@ -26,8 +26,7 @@ app.use(express.static("./public"));
 app.use(
     cookieSession({
         secret: cookie_sec,
-        // maxAge: 1000 * 60 * 60 * 24 * 14,
-        maxAge: 1000 * 60,
+        maxAge: 1000 * 60 * 60 * 24 * 14,
     })
 );
 
@@ -130,7 +129,7 @@ app.post("/login", (req, res) => {
 
                     if (match) {
                         req.session.userId = results.rows[0].id;
-                        res.redirect("/thanks");
+                        res.redirect("/petition/thanks");
                     } else {
                         res.redirect("/login"); // deve render ERR
                     }
@@ -141,108 +140,6 @@ app.post("/login", (req, res) => {
             console.log("ERROR in POST: ", err);
             res.redirect("/login");
         });
-});
-
-//////////////////////////
-//////// PETITION: ////////
-//////////////////////////
-
-app.get("/petition", (req, res) => {
-    console.log("PETITION req: ", req.session);
-    if (req.session.signatureId) {
-        //req.cookies["petition-signed"]
-        res.redirect("/thanks");
-    } else if (req.session.userId) {
-        res.render("petition", {
-            layout: "main",
-        });
-    } else {
-        res.redirect("/login");
-    }
-});
-
-app.post("/petition", (req, res) => {
-    console.log("♦ POST req was made!");
-    console.log("♦♦ POST req body: ", req.body);
-
-    const signature = req.body.signature;
-    const userId = req.session.userId;
-
-    db.formEnter(signature, userId)
-        .then((results) => {
-            // console.log("♦♦♦ results from POST: ", results);
-            console.log("♦♦♦ POST adding data to db: ");
-            req.session.signatureId = results.rows[0].id;
-            console.log("signer id: ", req.session.signatureId);
-            // res.cookie("petition-signed", "signed");
-            res.redirect("/thanks");
-            // return;
-        })
-        .catch((err) => {
-            console.log("ERROR in POST: ", err);
-            res.redirect("/petition");
-            // return;
-        });
-});
-
-//////////////////////////
-///////// THANKS: ////////
-//////////////////////////
-
-app.get("/thanks", (req, res) => {
-    console.log("signature id: ", req.session.signatureId);
-
-    if (req.session.userId) {
-        db.getSignatures()
-            .then((results) => {
-                db.findSignature(req.session.userId)
-                    .then((resultSigner) => {
-                        console.log("signer id: ", req.session.userId);
-                        console.log("all signers: ", results.rows);
-                        console.log("resultSigner: ", resultSigner);
-                        // console.log("results from getSignatures: ", results);
-                        let x = results["rowCount"];
-                        res.render("thanks", {
-                            layout: "main",
-                            totalSignatures: x,
-                            userSign: resultSigner.rows[0]["Signature"],
-                        });
-                    })
-                    .catch((err) => {
-                        console.log("ERROR in findSig: ", err);
-                        res.redirect("/petition");
-                    });
-            })
-
-            .catch((err) => {
-                console.log("ERR in GET: ", err);
-            });
-    } else {
-        res.redirect("/login");
-    }
-});
-
-//////////////////////////
-//////// SIGNERS: ////////
-//////////////////////////
-
-app.get("/signers", (req, res) => {
-    if (req.session.signatureId) {
-        db.getSignatures()
-            .then((results) => {
-                console.log("results from getSignatures: ", results);
-                let signatures = results["rows"];
-                res.render("signers", {
-                    layout: "main",
-                    signatures,
-                });
-            })
-            .catch((err) => {
-                console.log("ERR in GET: ", err);
-            });
-    } else {
-        res.redirect("/petition");
-    }
 });
 
 //////////////////////////
@@ -259,19 +156,179 @@ app.get("/profile", (req, res) => {
 });
 
 app.post("/profile", (req, res) => {
-    const age = req.body.age;
-    const city = req.session.city;
-    const url = req.session.url;
+    const age = req.body.age || 0;
+    const city = req.body.city;
+    const url = req.body.url;
     const userId = req.session.userId;
+    // make sure to check if we are inserting "bad" data into the url field
 
     db.enterProfileInfos(age, city, url, userId)
         .then(() => {
-            res.redirect("/thanks");
+            res.redirect("/petition");
         })
         .catch((err) => {
             console.log("ERR in POST: ", err);
         });
 });
+
+//////////////////////////
+////// PROFILE/EDIT: //////
+//////////////////////////
+app.get("/profile/edit", (req, res) => {
+    if (req.session.userId) {
+        db.profileInfos(req.session.userId)
+            .then((results) => {
+                const userInfos = results["rows"][0];
+
+                console.log("userInfos: ", userInfos);
+                res.render("editProfile", {
+                    layout: "main",
+                    fname: userInfos["First Name"],
+                    lname: userInfos["Last Name"],
+                    email: userInfos["email"],
+                    age: userInfos["age"],
+                    city: userInfos["city"],
+                    url: userInfos["url"],
+                });
+            })
+
+            .catch((err) => {
+                console.log("ERR in GET: ", err);
+            });
+    } else {
+        res.redirect("/login");
+    }
+});
+app.post("/profile/edit", (req, res) => {});
+
+//////////////////////////
+//////// PETITION: ////////
+//////////////////////////
+
+app.get("/petition", (req, res) => {
+    console.log("PETITION req: ", req.session);
+    if (req.session.signatureId) {
+        //req.cookies["petition-signed"]
+        res.redirect("/petition/thanks");
+    } else if (req.session.userId) {
+        res.render("petition", {
+            layout: "main",
+        });
+    } else {
+        res.redirect("/login");
+    }
+});
+
+app.post("/petition", (req, res) => {
+    // console.log("♦ POST req was made!");
+    // console.log("♦♦ POST req body: ", req.body);
+
+    const signature = req.body.signature;
+    const userId = req.session.userId;
+
+    db.formEnter(signature, userId)
+        .then((results) => {
+            // console.log("♦♦♦ results from POST: ", results.rows);
+            // console.log("♦♦♦ POST adding data to db: ");
+            req.session.signatureId = results.rows[0].id;
+            // console.log("signer id: ", req.session.signatureId);
+            // res.cookie("petition-signed", "signed");
+            res.redirect("/petition/thanks");
+            // return;
+        })
+        .catch((err) => {
+            console.log("ERROR in POST: ", err);
+            res.redirect("/petition");
+            // return;
+        });
+});
+
+//////////////////////////
+////// PETITION/THANKS: //////
+//////////////////////////
+
+app.get("/petition/thanks", (req, res) => {
+    // console.log("signature id: ", req.session.signatureId);
+
+    if (req.session.userId) {
+        db.getSignatures()
+            .then((results) => {
+                db.findSignature(req.session.userId)
+                    .then((resultSigner) => {
+                        // console.log("signer id: ", req.session.userId);
+                        // console.log("all signers: ", results.rows);
+                        console.log("resultSigner: ", resultSigner);
+                        // console.log("results from getSignatures: ", results);
+                        let x = results["rowCount"];
+                        res.render("thanks", {
+                            layout: "main",
+                            totalSignatures: x,
+                            userSign: resultSigner.rows[0].Signature,
+                        });
+                    })
+                    .catch((err) => {
+                        console.log("ERROR in findSig: ", err);
+                    });
+            })
+
+            .catch((err) => {
+                console.log("ERR in GET: ", err);
+            });
+    } else {
+        res.redirect("/login");
+    }
+});
+
+//////////////////////////
+////// PETITION/SIGNERS: //////
+//////////////////////////
+
+app.get("/petition/signers", (req, res) => {
+    if (req.session.signatureId) {
+        db.getSignersInfos()
+            .then((results) => {
+                console.log("results from getSignersInfos: ", results);
+                let signatures = results["rows"];
+                res.render("signers", {
+                    layout: "main",
+                    signatures,
+                });
+            })
+            .catch((err) => {
+                console.log("ERR in GET: ", err);
+            });
+    } else {
+        res.redirect("/petition");
+    }
+});
+
+//////////////////////////
+///// PETITION/SIGNERS/CITY: //////
+//////////////////////////
+
+app.get("/petition/signers/:city", (req, res) => {
+    const city = req.params.city;
+    console.log("city: ", city);
+
+    if (req.session.userId) {
+        db.getSignersByCity(city)
+            .then((results) => {
+                let usersForCity = results["rows"];
+
+                res.render("usersForCity", {
+                    layout: "main",
+                    city: city,
+                    usersForCity,
+                });
+            })
+            .catch((err) => {
+                console.log("ERR in GET: ", err);
+            });
+    } else {
+        res.redirect("/login");
+    }
+});
+/////////////////////////
 
 app.listen(process.env.PORT || 8080, () =>
     console.log("...Server is listening...")
@@ -279,6 +336,7 @@ app.listen(process.env.PORT || 8080, () =>
 
 /*
 PUNTI NON CHIARI:
+url:/petition/signers/ <--deve essere cosí???
 
 should i store signatures imgs somewhere else?
 secret.json ?
