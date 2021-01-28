@@ -1,3 +1,6 @@
+
+{{> logoutBtn}}
+
 <h1>EDIT YOUR PROFILE</h1>
 {{#if attack}}
 <br>
@@ -31,7 +34,6 @@
     <input type="submit" id="submit" value="Enter">
 </form>
 
-<form action="?">
-    <input type="hidden" name="_csrf" value="{{csrfToken}}">
-    <input type="submit" id="delete" value="Delete your profile">
-</form>
+<a href="/delete">
+<button>Delete your profile</button>
+</a>

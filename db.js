@@ -49,10 +49,12 @@ module.exports.enterProfileInfos = (age, city, url, userId) => {
 };
 
 module.exports.profileInfos = (userId) => {
-    const myQuery = `SELECT user_id, "First Name", "Last Name", email, age, city, url
+    const myQuery = `SELECT user_profiles.user_id, "First Name", "Last Name", email, age, city, url, signatures.id
         FROM users
         JOIN user_profiles
         ON users.id = user_profiles.user_id
+        LEFT JOIN signatures
+        ON users.id = signatures.user_id
         WHERE user_profiles.user_id = ($1);`;
     const key = [userId];
     return db.query(myQuery, key);
@@ -106,7 +108,9 @@ module.exports.getSignersByCity = (city) => {
     const myQuery = `SELECT "First Name", "Last Name", age
         FROM users
         JOIN user_profiles
-        ON ($1) = user_profiles.city
+        ON users.id = user_profiles.user_id
+        JOIN signatures
+        ON users.id = signatures.user_id
         WHERE LOWER(city) = LOWER($1);`;
     const key = [city];
     return db.query(myQuery, key);
