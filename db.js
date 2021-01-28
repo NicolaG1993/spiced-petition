@@ -17,7 +17,7 @@ module.exports.formEnter = (signature, userId) => {
 };
 
 module.exports.findSignature = (userId) => {
-    const myQuery = `SELECT "Signature" FROM signatures WHERE user_id = ($1)`;
+    const myQuery = `SELECT * FROM signatures WHERE user_id = ($1)`;
     const key = [userId];
     return db.query(myQuery, key);
 };

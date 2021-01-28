@@ -129,7 +129,8 @@ app.post("/login", (req, res) => {
 
                     if (match) {
                         req.session.userId = results.rows[0].id;
-                        res.redirect("/petition/thanks");
+
+                        res.redirect("/petition");
                     } else {
                         res.redirect("/login"); // deve render ERR
                     }
@@ -259,16 +260,32 @@ app.post("/profile/edit", (req, res) => {
 
 app.get("/petition", (req, res) => {
     console.log("PETITION req: ", req.session);
-    if (req.session.signatureId) {
-        //req.cookies["petition-signed"]
-        res.redirect("/petition/thanks");
-    } else if (req.session.userId) {
-        res.render("petition", {
-            layout: "main",
-        });
+    if (req.session.userId) {
+        db.findSignature(req.session.userId)
+            .then((results) => {
+                req.session.signatureId = results.rows[0].id;
+                res.redirect("/petition/thanks");
+            })
+            .catch((err) => {
+                // console.log("ERROR in findSig: ", err);
+                res.render("petition", {
+                    layout: "main",
+                });
+            });
     } else {
         res.redirect("/login");
     }
+
+    // if (req.session.signatureId) {
+    //     //req.cookies["petition-signed"]
+    //     res.redirect("/petition/thanks");
+    // } else if (req.session.userId) {
+    //     res.render("petition", {
+    //         layout: "main",
+    //     });
+    // } else {
+    //     res.redirect("/login");
+    // }
 });
 
 app.post("/petition", (req, res) => {
@@ -301,7 +318,6 @@ app.post("/petition", (req, res) => {
 
 app.get("/petition/thanks", (req, res) => {
     // console.log("signature id: ", req.session.signatureId);
-
     if (req.session.userId) {
         db.getSignatures()
             .then((results) => {
@@ -320,6 +336,7 @@ app.get("/petition/thanks", (req, res) => {
                     })
                     .catch((err) => {
                         console.log("ERROR in findSig: ", err);
+                        res.redirect("/petition");
                     });
             })
 
