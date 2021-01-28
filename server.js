@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+exports.app = app;
 // const cookieParser = require("cookie-parser"); //dont need this with cookieSesion?
 const cookieSession = require("cookie-session");
 const csurf = require("csurf");
@@ -13,6 +14,8 @@ if (process.env.secretCookie) {
 }
 
 const hb = require("express-handlebars");
+const mw = require("./middleware");
+
 app.engine("handlebars", hb());
 app.set("view engine", "handlebars");
 // app.use(cookieParser()); //dont need this with cookieSesion?

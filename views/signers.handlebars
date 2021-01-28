@@ -5,8 +5,15 @@
 
 {{#signatures}}
 <div>
+    {{#if url}}
+    <a href="{{url}}">
     <p>{{'First Name'}}</p>
     <p>{{'Last Name'}}</p>
+    </a>
+    {{else}}
+    <p>{{'First Name'}}</p>
+    <p>{{'Last Name'}}</p>
+    {{/if}}
     <p>{{age}}</p>
     <p><a href="/petition/signers/{{city}}">{{city}}</a></p>
     <p><a href={{url}}>{{url}}</a></p>

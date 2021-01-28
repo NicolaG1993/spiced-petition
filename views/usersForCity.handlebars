@@ -5,8 +5,15 @@
 
 {{#usersForCity}}
 <div>
+    {{#if url}}
+    <a href="{{url}}">
     <p>{{'First Name'}}</p>
     <p>{{'Last Name'}}</p>
+    </a>
+    {{else}}
+    <p>{{'First Name'}}</p>
+    <p>{{'Last Name'}}</p>
+    {{/if}}
     <p>{{age}}</p>
 </div>
 {{/usersForCity}}
