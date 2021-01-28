@@ -1,13 +1,10 @@
 const express = require("express");
 const app = express();
-
 // const cookieParser = require("cookie-parser"); //dont need this with cookieSesion?
 const cookieSession = require("cookie-session");
 const csurf = require("csurf");
-
 const db = require("./db");
 const bc = require("./bc");
-
 let cookie_sec;
 if (process.env.secretCookie) {
     cookie_sec = process.env.secretCookie;
@@ -18,18 +15,14 @@ if (process.env.secretCookie) {
 const hb = require("express-handlebars");
 app.engine("handlebars", hb());
 app.set("view engine", "handlebars");
-
 // app.use(cookieParser()); //dont need this with cookieSesion?
-
 app.use(express.static("./public"));
-
 app.use(
     cookieSession({
         secret: cookie_sec,
         maxAge: 1000 * 60 * 60 * 24 * 14,
     })
 );
-
 app.use(express.urlencoded({ extended: false }));
 app.use(csurf());
 
@@ -57,7 +50,6 @@ app.use((req, res, next) => {
     res.setHeader("x-frame-options", "deny");
     next();
 });
-
 app.use((req, res, next) => {
     //csurf?
     res.locals.csrfToken = req.csrfToken();
@@ -73,10 +65,11 @@ app.get("/", (req, res) => res.redirect("/register"));
 app.get("/register", (req, res) => {
     if (req.session.userId) {
         res.redirect("/petition");
+    } else {
+        res.render("registration", {
+            layout: "main",
+        });
     }
-    res.render("registration", {
-        layout: "main",
-    });
 });
 
 app.post("/register", (req, res) => {
@@ -87,18 +80,16 @@ app.post("/register", (req, res) => {
 
     bc.hash(password)
         .then((hashedPw) => {
-            console.log("hashedPw in /register:", hashedPw);
-
             db.userRegistration(firstName, lastName, email, hashedPw)
                 .then((results) => {
-                    console.log("♦♦♦ POST adding data to db: ");
-                    // console.log("results: ", results);
                     req.session.userId = results.rows[0].id;
                     res.redirect("/profile");
                 })
                 .catch((err) => {
-                    console.log("ERR in user registration: ", err);
-                    res.redirect("/register");
+                    res.render("registration", {
+                        layout: "main",
+                        err,
+                    });
                 });
         })
         .catch((err) => console.log("ERR in hash:", err));
@@ -121,25 +112,28 @@ app.post("/login", (req, res) => {
     db.userLogIn(email)
         .then((results) => {
             const hashFromDB = results.rows[0].password;
-            console.log("results: ", results.rows[0]);
-
             bc.compare(password, hashFromDB)
                 .then((match) => {
-                    // console.log("match value from compare:", match);
-
                     if (match) {
                         req.session.userId = results.rows[0].id;
-
                         res.redirect("/petition");
                     } else {
-                        res.redirect("/login"); // deve render ERR
+                        throw Error;
                     }
                 })
-                .catch((err) => console.log("err in compare:", err));
+                .catch((err) => {
+                    res.render("login", {
+                        layout: "main",
+                        err,
+                    });
+                });
         })
         .catch((err) => {
-            console.log("ERROR in POST: ", err);
-            res.redirect("/login");
+            // res.redirect("/login");
+            res.render("login", {
+                layout: "main",
+                err,
+            });
         });
 });
 
@@ -162,14 +156,21 @@ app.post("/profile", (req, res) => {
     const url = req.body.url;
     const userId = req.session.userId;
     // make sure to check if we are inserting "bad" data into the url field
-
-    db.enterProfileInfos(age, city, url, userId)
-        .then(() => {
-            res.redirect("/petition");
-        })
-        .catch((err) => {
-            console.log("ERR in POST: ", err);
+    if (url.startsWith("http://" || "https://") || url == "") {
+        db.enterProfileInfos(age, city, url, userId)
+            .then(() => {
+                res.redirect("/petition");
+            })
+            .catch((err) => {
+                console.log("ERR in POST: ", err);
+            });
+    } else {
+        let attack = true;
+        res.render("profile", {
+            layout: "main",
+            attack,
         });
+    }
 });
 
 //////////////////////////
@@ -180,8 +181,6 @@ app.get("/profile/edit", (req, res) => {
         db.profileInfos(req.session.userId)
             .then((results) => {
                 const userInfos = results["rows"][0];
-
-                // console.log("userInfos: ", userInfos);
                 res.render("editProfile", {
                     layout: "main",
                     fname: userInfos["First Name"],
@@ -205,7 +204,7 @@ app.post("/profile/edit", (req, res) => {
     const firstName = req.body.fname;
     const lastName = req.body.lname;
     const email = req.body.email;
-    const password = req.body.password; //devo fare hash
+    const password = req.body.password;
     const age = req.body.age;
     const city = req.body.city;
     const url = req.body.url;
@@ -222,13 +221,29 @@ app.post("/profile/edit", (req, res) => {
                     userId
                 )
                     .then(() => {
-                        db.updateUserProfile(age, city, url, userId)
-                            .then(() => {
-                                res.redirect("/petition");
-                            })
-                            .catch((err) => {
-                                console.log("ERR in POST2: ", err);
+                        if (
+                            url.startsWith("http://" || "https://") ||
+                            url == ""
+                        ) {
+                            db.updateUserProfile(age, city, url, userId)
+                                .then(() => {
+                                    res.redirect("/petition");
+                                })
+                                .catch((err) => {
+                                    console.log("ERR in POST2: ", err);
+                                });
+                        } else {
+                            let attack = true;
+                            res.render("editProfile", {
+                                layout: "main",
+                                attack,
+                                fname: firstName,
+                                lname: lastName,
+                                email: email,
+                                age: age,
+                                city: city,
                             });
+                        }
                     })
                     .catch((err) => {
                         console.log("ERR in POST: ", err);
@@ -240,13 +255,26 @@ app.post("/profile/edit", (req, res) => {
     } else {
         db.updateUser(firstName, lastName, email, userId)
             .then(() => {
-                db.updateUserProfile(age, city, url, userId)
-                    .then(() => {
-                        res.redirect("/petition");
-                    })
-                    .catch((err) => {
-                        console.log("ERR in POST2: ", err);
+                if (url.startsWith("http://" || "https://") || url == "") {
+                    db.updateUserProfile(age, city, url, userId)
+                        .then(() => {
+                            res.redirect("/petition");
+                        })
+                        .catch((err) => {
+                            console.log("ERR in POST2: ", err);
+                        });
+                } else {
+                    let attack = true;
+                    res.render("editProfile", {
+                        layout: "main",
+                        attack,
+                        fname: firstName,
+                        lname: lastName,
+                        email: email,
+                        age: age,
+                        city: city,
                     });
+                }
             })
             .catch((err) => {
                 console.log("ERR in POST: ", err);
@@ -259,7 +287,6 @@ app.post("/profile/edit", (req, res) => {
 //////////////////////////
 
 app.get("/petition", (req, res) => {
-    console.log("PETITION req: ", req.session);
     if (req.session.userId) {
         db.findSignature(req.session.userId)
             .then((results) => {
@@ -267,7 +294,6 @@ app.get("/petition", (req, res) => {
                 res.redirect("/petition/thanks");
             })
             .catch((err) => {
-                // console.log("ERROR in findSig: ", err);
                 res.render("petition", {
                     layout: "main",
                 });
@@ -289,26 +315,18 @@ app.get("/petition", (req, res) => {
 });
 
 app.post("/petition", (req, res) => {
-    // console.log("♦ POST req was made!");
-    // console.log("♦♦ POST req body: ", req.body);
-
     const signature = req.body.signature;
     const userId = req.session.userId;
 
     db.formEnter(signature, userId)
         .then((results) => {
-            // console.log("♦♦♦ results from POST: ", results.rows);
-            // console.log("♦♦♦ POST adding data to db: ");
             req.session.signatureId = results.rows[0].id;
-            // console.log("signer id: ", req.session.signatureId);
             // res.cookie("petition-signed", "signed");
             res.redirect("/petition/thanks");
-            // return;
         })
         .catch((err) => {
             console.log("ERROR in POST: ", err);
             res.redirect("/petition");
-            // return;
         });
 });
 
@@ -317,16 +335,11 @@ app.post("/petition", (req, res) => {
 //////////////////////////
 
 app.get("/petition/thanks", (req, res) => {
-    // console.log("signature id: ", req.session.signatureId);
     if (req.session.userId) {
         db.getSignatures()
             .then((results) => {
                 db.findSignature(req.session.userId)
                     .then((resultSigner) => {
-                        // console.log("signer id: ", req.session.userId);
-                        // console.log("all signers: ", results.rows);
-                        console.log("resultSigner: ", resultSigner);
-                        // console.log("results from getSignatures: ", results);
                         let x = results["rowCount"];
                         res.render("thanks", {
                             layout: "main",
@@ -339,7 +352,6 @@ app.get("/petition/thanks", (req, res) => {
                         res.redirect("/petition");
                     });
             })
-
             .catch((err) => {
                 console.log("ERR in GET: ", err);
             });
@@ -350,7 +362,6 @@ app.get("/petition/thanks", (req, res) => {
 
 app.post("/petition/thanks", (req, res) => {
     const userId = req.session.userId;
-
     db.deleteSignature(userId)
         .then(() => {
             req.session.signatureId = null;
@@ -369,7 +380,6 @@ app.get("/petition/signers", (req, res) => {
     if (req.session.signatureId) {
         db.getSignersInfos()
             .then((results) => {
-                console.log("results from getSignersInfos: ", results);
                 let signatures = results["rows"];
                 res.render("signers", {
                     layout: "main",
@@ -390,8 +400,6 @@ app.get("/petition/signers", (req, res) => {
 
 app.get("/petition/signers/:city", (req, res) => {
     const city = req.params.city;
-    console.log("city: ", city);
-
     if (req.session.userId) {
         db.getSignersByCity(city)
             .then((results) => {
@@ -410,7 +418,16 @@ app.get("/petition/signers/:city", (req, res) => {
         res.redirect("/login");
     }
 });
-/////////////////////////
+
+//////////////////////////
+////// ERR 404: //////
+//////////////////////////
+app.get("*", function (req, res) {
+    // res.send("what???", 404);
+    res.render("404", {
+        layout: "main",
+    });
+});
 
 app.listen(process.env.PORT || 8080, () =>
     console.log("...Server is listening...")
@@ -418,10 +435,17 @@ app.listen(process.env.PORT || 8080, () =>
 
 /*
 PUNTI NON CHIARI:
-url:/petition/signers/ <--deve essere cosí???
-
 should i store signatures imgs somewhere else?
-secret.json ?
-returning possible errors
+
 non mi é possibile checckare un doppio url nel middleware senza entrare in loop su almeno uno
+*/
+
+// BUGS
+
+/*
+
+1- catch err in petition
+2- delete profile non funziona
+3- log out non funziona
+
 */

@@ -1,4 +1,9 @@
 <h1>EDIT YOUR PROFILE</h1>
+{{#if attack}}
+<br>
+{{> hacking}}
+<br>
+{{/if}}
 
 <form method="post">
     <label for="fname">First name:</label>
@@ -24,4 +29,9 @@
     <input type="hidden" name="_csrf" value="{{csrfToken}}">
     <br>
     <input type="submit" id="submit" value="Enter">
+</form>
+
+<form action="?">
+    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+    <input type="submit" id="delete" value="Delete your profile">
 </form>
