@@ -9,6 +9,7 @@ body {
     background-color: rgb(56, 56, 56);
     color: rgb(95, 255, 80);
     font-family: "Averia Serif Libre";
+    overflow: overlay;
     overflow-x: hidden;
 }
 
@@ -29,7 +30,7 @@ body {
 
 /* width */
 ::-webkit-scrollbar {
-    width: 13px;
+    width: 20px;
 }
 /* Handle */
 ::-webkit-scrollbar-thumb {
