@@ -40,6 +40,10 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: rgb(56, 56, 56);
 }
+/* Track */
+::-webkit-scrollbar-track {
+    background: transparent;
+}
 
 ::selection {
     background: lightgreen;
