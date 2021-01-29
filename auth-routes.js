@@ -26,7 +26,12 @@ router.post("/register", requireLoggedOutUser, (req, res) => {
 
     bc.hash(password)
         .then((hashedPw) => {
-            if (firstName || lastName || email || password == "") {
+            if (
+                firstName == "" ||
+                lastName == "" ||
+                email == "" ||
+                password == ""
+            ) {
                 throw Error;
             }
             db.userRegistration(firstName, lastName, email, hashedPw)

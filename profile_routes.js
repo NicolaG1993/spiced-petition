@@ -15,10 +15,19 @@ router.get("/profile", requireLoggedInUser, (req, res) => {
 });
 
 router.post("/profile", (req, res) => {
-    const age = +req.body.age;
+    let age = +req.body.age;
     const city = req.body.city;
     let url = req.body.url;
     const userId = req.session.userId;
+
+    if (age >= 101 || age < 0) {
+        let attack = true;
+        res.render("profile", {
+            layout: "main",
+            page: "Profile",
+            attack,
+        });
+    }
 
     if (url.startsWith("http") || url == "") {
         db.enterProfileInfos(age, city, url, userId)
@@ -83,12 +92,15 @@ router.post("/profile/edit", (req, res) => {
     const lastName = req.body.lname;
     const email = req.body.email;
     const password = req.body.password;
-    const age = +req.body.age;
+    let age = +req.body.age;
     const city = req.body.city;
     let url = req.body.url;
     const userId = req.session.userId;
 
     const checkLink = (str) => {
+        if (age > 100 || age < 0) {
+            throw Error;
+        }
         if (str.startsWith("http") || str == "") {
             console.log("valid str");
         } else if (
