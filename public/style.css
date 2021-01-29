@@ -8,8 +8,23 @@
 body {
     background-color: rgb(56, 56, 56);
     color: rgb(95, 255, 80);
-    font-family: "Times New Roman", Times, serif;
+    font-family: "Averia Serif Libre";
     overflow: hidden;
+}
+
+#BG {
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
+    top: 0;
+
+    background: url("https://images.pexels.com/photos/4430916/pexels-photo-4430916.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 110%;
+    opacity: 75%;
+
+    z-index: -100;
 }
 
 ::selection {
@@ -32,6 +47,7 @@ footer {
 
 header {
     margin-bottom: 50px;
+    z-index: 5;
 }
 
 footer {
@@ -43,7 +59,7 @@ footer {
 h1,
 h2,
 h3 {
-    font-family: Helvetica;
+    font-family: "Viga";
 }
 
 h1 {
@@ -107,6 +123,12 @@ canvas {
 
 div.midBox > h3 {
     margin-bottom: 15px;
+}
+
+.largeText {
+    max-width: 400px;
+    margin-top: 20px;
+    font-style: italic;
 }
 
 .userInfos {
