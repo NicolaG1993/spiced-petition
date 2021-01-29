@@ -26,6 +26,9 @@ router.post("/register", requireLoggedOutUser, (req, res) => {
 
     bc.hash(password)
         .then((hashedPw) => {
+            if (firstName || lastName || email || password == "") {
+                throw Error;
+            }
             db.userRegistration(firstName, lastName, email, hashedPw)
                 .then((results) => {
                     req.session.userId = results.rows[0].id;
@@ -38,7 +41,13 @@ router.post("/register", requireLoggedOutUser, (req, res) => {
                     });
                 });
         })
-        .catch((err) => console.log("ERR in hash:", err));
+        .catch((err) => {
+            console.log("ERR in hash:", err);
+            res.render("registration", {
+                layout: "main",
+                err,
+            });
+        });
 });
 
 //////////////////////////
