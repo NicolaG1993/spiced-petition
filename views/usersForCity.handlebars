@@ -1,18 +1,21 @@
 
 {{> logoutBtn}}
 
-<h1>USERS FOR {{city}} IS HERE!!!</h1>
+<h1>All signers in {{page}}</h1>
+
+<div class="tableHead">   
+        <h3>FULL NAME</h3>
+        <h3>AGE</h3>
+</div>
 
 {{#usersForCity}}
-<div>
+<div class="table">
     {{#if url}}
-    <a href="{{url}}">
-    <p>{{'First Name'}}</p>
-    <p>{{'Last Name'}}</p>
-    </a>
+    <span><a href="{{url}}">
+    {{'First Name'}} {{'Last Name'}}
+    </a></span>
     {{else}}
-    <p>{{'First Name'}}</p>
-    <p>{{'Last Name'}}</p>
+    <span>{{'First Name'}} {{'Last Name'}}</span>
     {{/if}}
     <p>{{age}}</p>
 </div>

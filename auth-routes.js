@@ -14,6 +14,7 @@ const bc = require("./bc");
 router.get("/register", requireLoggedOutUser, (req, res) => {
     res.render("registration", {
         layout: "main",
+        page: "Registration",
     });
 });
 
@@ -47,6 +48,7 @@ router.post("/register", requireLoggedOutUser, (req, res) => {
 router.get("/login", requireLoggedOutUser, (req, res) => {
     res.render("login", {
         layout: "main",
+        page: "Login",
     });
 });
 

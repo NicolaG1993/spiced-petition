@@ -1,15 +1,36 @@
 
 {{> logoutBtn}}
 
-<h1>THANKS IS HERE!!!</h1>
+<div class="box">
+    <h1>THANKS FOR SIGNING!</h1>
+    <p>You are making the difference</p>
+</div>
 
-<img src={{userSign}} alt="signature">
+<div class="box">
+    <div id="yourSignature">
+        <img src={{userSign}} alt="signature">
+    </div>
 
-<a href="/petition/signers">see all {{totalSignatures}} signatures</a>
-<a href="/profile/edit">edit your profile</a>
+    <form method="post">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <br>
+        <input type="submit" id="submitNoMargin" value="Delete your signature">
+    </form>
+</div>
 
-<form method="post">
-    <input type="hidden" name="_csrf" value="{{csrfToken}}">
-    <br>
-    <input type="submit" id="submit" value="Delete your signature">
-</form>
+<div class="midBox">
+    <h3>
+        <a href="/petition/signers">
+           ♦ SEE ALL {{totalSignatures}} SIGNERS
+        </a>
+    </h3>
+    <h3>
+        <a href="/profile/edit">
+            ♦ EDIT YOUR PROFILE
+        </a>
+    </h3>
+</div>
+
+
+{{!-- <a href="/petition/signers"><button>see all {{totalSignatures}} signatures</button></a> --}}
+{{!-- <a href="/profile/edit"><button>edit your profile</button></a> --}}

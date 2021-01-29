@@ -19,23 +19,37 @@ body {
 header,
 main,
 footer {
+    width: 100%;
     padding: 5px 30px;
 }
 
-header {
-    width: 100%;
+header,
+footer {
     background: rgb(14, 14, 14);
+    box-shadow: 0px 0px 15px #000000b4;
+}
+
+header {
     margin-bottom: 50px;
 }
 
 footer {
     margin-top: 50px;
+    position: absolute;
+    bottom: 0;
     /* clear: both; */
 }
 h1,
 h2,
 h3 {
     font-family: Helvetica;
+}
+
+h1 {
+    margin-bottom: 5px;
+}
+h2 {
+    margin-bottom: 10px;
 }
 
 a {
@@ -46,6 +60,31 @@ a {
 
 a:hover {
     color: fuchsia;
+    transition: 0.15s ease-in;
+}
+
+button,
+#submit,
+#submitNoMargin {
+    width: 180px;
+    color: rgb(14, 14, 14);
+    background: rgb(95, 255, 80);
+    border: 2px solid rgb(95, 255, 80);
+    border-radius: 20pt;
+    padding: 5px 8px;
+    line-height: 18px;
+    font-weight: bolder;
+    cursor: pointer;
+    box-shadow: 0px 5px 10px #00000048;
+}
+
+button:hover,
+#submit:hover,
+#submitNoMargin:hover {
+    color: rgb(95, 255, 80);
+    background: transparent;
+    border: 2px solid rgb(95, 255, 80);
+    transition: 0.15s ease-in;
 }
 
 /* DIVS */
@@ -55,4 +94,91 @@ canvas {
     width: 400px;
     /* background: rgb(24, 24, 24); */
     border: 1px solid rgb(95, 255, 80);
+}
+
+.box {
+    margin-bottom: 25px;
+}
+
+.midBox {
+    margin: 90px 0;
+}
+
+div.midBox > h3 {
+    margin-bottom: 15px;
+}
+
+.userInfos {
+    width: 100%;
+    margin-top: 30px;
+    margin-bottom: 35px;
+}
+
+.tableHead {
+    margin-top: 20px;
+    margin-bottom: 45px;
+}
+.table {
+    margin-bottom: 10px;
+}
+.tableHead,
+.table {
+    width: 100%;
+    height: 20px;
+    display: inline-grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    text-align: center;
+}
+.tableHead > h3 {
+    padding-bottom: 15px;
+    border-bottom: 2px solid white;
+}
+
+.table > span {
+    margin-bottom: 20px;
+}
+
+/* ELEMENTS */
+
+#logoutBtn {
+    position: absolute;
+    top: 10px;
+    right: 30px;
+}
+
+#logoutBtnStyle {
+    width: auto;
+}
+
+form {
+    max-width: 380px;
+}
+
+label[for="fname"],
+label[for="lname"],
+label[for="email"],
+label[for="age"],
+label[for="password"],
+label[for="city"],
+label[for="url"] {
+    line-height: 25px;
+}
+
+#fname,
+#lname,
+#email,
+#password,
+#age,
+#city,
+#url {
+    width: 200px;
+    float: right;
+}
+
+#submit {
+    margin: 35px 10px 0 0;
+}
+
+#submitNoMargin {
+    margin: 0;
 }

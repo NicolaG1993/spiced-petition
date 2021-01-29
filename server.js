@@ -112,6 +112,7 @@ app.get("/petition/thanks", requireSignature, (req, res) => {
                     let x = results["rowCount"];
                     res.render("thanks", {
                         layout: "main",
+                        page: "Thanks!",
                         totalSignatures: x,
                         userSign: resultSigner.rows[0].Signature,
                     });
@@ -149,6 +150,7 @@ app.get("/petition/signers", requireSignature, (req, res) => {
             let signatures = results["rows"];
             res.render("signers", {
                 layout: "main",
+                page: "Signers!",
                 signatures,
             });
         })
@@ -169,7 +171,7 @@ app.get("/petition/signers/:city", requireSignature, (req, res) => {
             let usersForCity = results["rows"];
             res.render("usersForCity", {
                 layout: "main",
-                city: city,
+                page: city,
                 usersForCity,
             });
         })
@@ -202,6 +204,7 @@ app.get("*", (req, res) => {
     // res.send("what???", 404);
     res.render("404", {
         layout: "main",
+        page: "Not Found!",
     });
 });
 

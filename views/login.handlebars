@@ -1,21 +1,25 @@
-<h1>LOGIN IS HERE!!!</h1>
+<div class="box">
+    <h1>LOGIN</h1>
+</div>
+
 {{#if err}}
 <br>
 {{> error}}
 <br>
 {{/if}}
+<div class="userInfos">
+    <form method="post">
+        <label for="email">Email:</label>
+        <input type="text" id="email" name="email" value="example@hello.org">
+        <br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" value="xxx">
 
-<form method="post">
-    <label for="email">Email:</label>
-    <input type="text" id="email" name="email" value="example@hello.org">
-    <br>
-    <label for="password">Password:</label>
-    <input type="text" id="password" name="password" value="xxx">
-    
-    
-    <input type="hidden" name="_csrf" value="{{csrfToken}}">
-    <br>
-    <input type="submit" id="submit" value="Log In">
-</form>
+
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <br>
+        <input type="submit" id="submit" value="Login">
+    </form>
+</div>
 
 <p>You need an account to log in: <a href="/register">Register here</a></p>

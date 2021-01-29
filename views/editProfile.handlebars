@@ -1,7 +1,10 @@
 
 {{> logoutBtn}}
 
-<h1>EDIT YOUR PROFILE</h1>
+<div class="box">
+    <h1>EDIT YOUR PROFILE</h1>
+</div>
+
 {{#if attack}}
 <br>
 {{> hacking}}
@@ -9,32 +12,36 @@
 {{/if}}
 
 
-<form method="post">
-    
-    <label for="fname">First name:</label>
-    <input type="text" id="fname" name="fname" value="{{fname}}">
-    <br>
-    <label for="lname">Last name:</label>
-    <input type="text" id="lname" name="lname" value="{{lname}}">
-    <br>
-    <label for="email">Email:</label>
-    <input type="text" id="email" name="email" value="{{email}}">
-    <br>
-    <label for="password">Password:</label>
-    <input type="text" id="password" name="password" value="">
-    <label for="age">Age:</label>
-    <input type="number" id="age" name="age" min="0" max="100" value="{{age}}">
-    <br>
-    <label for="city">City:</label>
-    <input type="text" id="city" name="city" value="{{city}}">
-    <br>
-    <label for="url">url:</label>
-    <input type="text" id="url" name="url" value="{{url}}">
-    <input type="hidden" name="_csrf" value="{{csrfToken}}">
-    <br>
-    <input type="submit" id="submit" value="Enter">
-</form>
 
-<a href="/delete">
+<div class="userInfos">
+    <form method="post">
+
+        <label for="fname">First name:</label>
+        <input type="text" id="fname" name="fname" value="{{fname}}">
+        <br>
+        <label for="lname">Last name:</label>
+        <input type="text" id="lname" name="lname" value="{{lname}}">
+        <br>
+        <label for="email">Email:</label>
+        <input type="text" id="email" name="email" value="{{email}}">
+        <br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" value="">
+        <br>
+        <label for="age">Age:</label>
+        <input type="number" id="age" name="age" min="0" max="100" value="{{age}}">
+        <br>
+        <label for="city">City:</label>
+        <input type="text" id="city" name="city" value="{{city}}">
+        <br>
+        <label for="url">url:</label>
+        <input type="text" id="url" name="url" value="{{url}}">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <br>
+        <input type="submit" id="submit" value="Enter">
+
+        <a href="/delete">
 <button>Delete your profile</button>
 </a>
+    </form>
+</div>

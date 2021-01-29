@@ -10,11 +10,12 @@ const { requireLoggedInUser } = require("./middleware");
 router.get("/profile", requireLoggedInUser, (req, res) => {
     res.render("profile", {
         layout: "main",
+        page: "Profile",
     });
 });
 
 router.post("/profile", (req, res) => {
-    const age = req.body.age || 0;
+    const age = +req.body.age;
     const city = req.body.city;
     let url = req.body.url;
     const userId = req.session.userId;
@@ -33,6 +34,7 @@ router.post("/profile", (req, res) => {
         let attack = true;
         res.render("profile", {
             layout: "main",
+            page: "Profile",
             attack,
         });
     } else {
@@ -56,6 +58,7 @@ router.get("/profile/edit", requireLoggedInUser, (req, res) => {
             const userInfos = results["rows"][0];
             res.render("editProfile", {
                 layout: "main",
+                page: "Edit Profile",
                 fname: userInfos["First Name"],
                 lname: userInfos["Last Name"],
                 email: userInfos["email"],
@@ -118,6 +121,7 @@ router.post("/profile/edit", (req, res) => {
                         let attack = true;
                         res.render("editProfile", {
                             layout: "main",
+                            page: "Edit Profile",
                             attack,
                             fname: firstName,
                             lname: lastName,
@@ -148,6 +152,7 @@ router.post("/profile/edit", (req, res) => {
                 let attack = true;
                 res.render("editProfile", {
                     layout: "main",
+                    page: "Edit Profile",
                     attack,
                     fname: firstName,
                     lname: lastName,

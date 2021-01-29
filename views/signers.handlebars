@@ -1,21 +1,29 @@
 
 {{> logoutBtn}}
 
-<h1>SIGNERS IS HERE!!!</h1>
+<div class="box">
+    <h1>THE SIGNERS</h1>
+    <p>Thank you all ♥</p>
+</div>
+
+<div class="tableHead">   
+        <h3>FULL NAME</h3>
+        <h3>AGE</h3>
+        <h3>CITY</h3>
+        <h3>WEBSITE</h3>
+</div>
 
 {{#signatures}}
-<div>
+<div class="table">
     {{#if url}}
-    <a href="{{url}}">
-    <p>{{'First Name'}}</p>
-    <p>{{'Last Name'}}</p>
-    </a>
+    <span><a href="{{url}}">
+    {{'First Name'}} {{'Last Name'}}
+    </a></span>
     {{else}}
-    <p>{{'First Name'}}</p>
-    <p>{{'Last Name'}}</p>
+    <span>{{'First Name'}} {{'Last Name'}}</span>
     {{/if}}
-    <p>{{age}}</p>
-    <p><a href="/petition/signers/{{city}}">{{city}}</a></p>
-    <p><a href={{url}}>{{url}}</a></p>
+    <span>{{age}}</span>
+    <span><a href="/petition/signers/{{city}}">{{city}}</a></span>
+    <span><a href={{url}}>{{url}}</a></span>
 </div>
 {{/signatures}}

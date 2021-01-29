@@ -1,28 +1,31 @@
-<h1>REGISTRATION IS HERE!!!</h1>
+<div class="box">
+    <h1>CREATE AN ACCOUNT</h1>
+</div>
+
 {{#if err}}
 <br>
 {{> error}}
 <br>
 {{/if}}
+<div class="userInfos">
+    <form method="post">
+        <label for="fname">First name:</label>
+        <input type="text" id="fname" name="fname" value="Giuseppe">
+        <br>
+        <label for="lname">Last name:</label>
+        <input type="text" id="lname" name="lname" value="Verdi">
+        <br>
+        <label for="email">Email:</label>
+        <input type="text" id="email" name="email" value="example@hello.org">
+        <br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" value="xxx">
 
-<form method="post">
-    <label for="fname">First name:</label>
-    <input type="text" id="fname" name="fname" value="Giuseppe">
-    <br>
-    <label for="lname">Last name:</label>
-    <input type="text" id="lname" name="lname" value="Verdi">
-    <br>
-    <label for="email">Email:</label>
-    <input type="text" id="email" name="email" value="example@hello.org">
-    <br>
-    <label for="password">Password:</label>
-    <input type="text" id="password" name="password" value="xxx">
-    
-    
-    
-    <input type="hidden" name="_csrf" value="{{csrfToken}}">
-    <br>
-    <input type="submit" id="submit" value="Sign up">
-</form>
 
+
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <br>
+        <input type="submit" id="submit" value="Sign up">
+    </form>
+</div>
 <p>Do you have an account already? <a href="/login">LOG IN</a></p>
