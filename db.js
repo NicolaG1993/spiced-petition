@@ -105,7 +105,7 @@ module.exports.getSignersInfos = () => {
 };
 
 module.exports.getSignersByCity = (city) => {
-    const myQuery = `SELECT "First Name", "Last Name", age
+    const myQuery = `SELECT "First Name", "Last Name", age, url
         FROM users
         JOIN user_profiles
         ON users.id = user_profiles.user_id

@@ -150,7 +150,7 @@ app.get("/petition/signers", requireSignature, (req, res) => {
             let signatures = results["rows"];
             res.render("signers", {
                 layout: "main",
-                page: "Signers!",
+                page: "Signers",
                 signatures,
             });
         })
