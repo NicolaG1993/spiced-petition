@@ -20,7 +20,7 @@ router.post("/profile", (req, res) => {
     let url = req.body.url;
     const userId = req.session.userId;
 
-    if (url.startsWith("http://" || "https://") || url == "") {
+    if (url.startsWith("http") || url == "") {
         db.enterProfileInfos(age, city, url, userId)
             .then(() => {
                 res.redirect("/petition");
@@ -84,7 +84,7 @@ router.post("/profile/edit", (req, res) => {
     const userId = req.session.userId;
 
     const checkLink = (str) => {
-        if (str.startsWith("http://" || "https://") || str == "") {
+        if (str.startsWith("http") || str == "") {
             console.log("valid str");
         } else if (str.startsWith("<") || typeof str !== "string") {
             url = `http://${str}`;
