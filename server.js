@@ -1,12 +1,12 @@
 const express = require("express");
 const app = express();
-exports.app = app;
-const router = express.Router();
+// exports.app = app;
+
 // const cookieParser = require("cookie-parser"); //dont need this with cookieSesion?
 const cookieSession = require("cookie-session");
 const csurf = require("csurf");
 const db = require("./db");
-const bc = require("./bc");
+// const bc = require("./bc");
 let cookie_sec;
 if (process.env.secretCookie) {
     cookie_sec = process.env.secretCookie;
@@ -22,7 +22,9 @@ const {
     requireSignature,
     dealWithCookieVulnerabilities,
 } = require("./middleware");
-// const profileRouter = require("./profile-routes").router;
+
+const profileRouter = require("./profile_routes").router;
+const authRouter = require("./auth-routes").router;
 
 app.engine("handlebars", hb());
 app.set("view engine", "handlebars");
@@ -57,251 +59,10 @@ app.use(csurf());
 // });
 app.use(dealWithCookieVulnerabilities);
 app.use(requireLoggedInUser);
-// app.use(profileRouter);
-// require("./auth-routes");
-
-//////////////////////////
-////// CREATE USER: //////
-//////////////////////////
+app.use(authRouter);
+app.use(profileRouter);
 
 app.get("/", (req, res) => res.redirect("/register"));
-
-app.get("/register", requireLoggedOutUser, (req, res) => {
-    res.render("registration", {
-        layout: "main",
-    });
-});
-
-app.post("/register", requireLoggedOutUser, (req, res) => {
-    const firstName = req.body.fname;
-    const lastName = req.body.lname;
-    const email = req.body.email;
-    const password = req.body.password;
-
-    bc.hash(password)
-        .then((hashedPw) => {
-            db.userRegistration(firstName, lastName, email, hashedPw)
-                .then((results) => {
-                    req.session.userId = results.rows[0].id;
-                    res.redirect("/profile");
-                })
-                .catch((err) => {
-                    res.render("registration", {
-                        layout: "main",
-                        err,
-                    });
-                });
-        })
-        .catch((err) => console.log("ERR in hash:", err));
-});
-
-//////////////////////////
-////// USER LOGIN: ///////
-//////////////////////////
-
-app.get("/login", requireLoggedOutUser, (req, res) => {
-    res.render("login", {
-        layout: "main",
-    });
-});
-
-app.post("/login", requireLoggedOutUser, (req, res) => {
-    const email = req.body.email;
-    const password = req.body.password;
-
-    db.userLogIn(email)
-        .then((results) => {
-            const hashFromDB = results.rows[0].password;
-            bc.compare(password, hashFromDB)
-                .then((match) => {
-                    if (match) {
-                        req.session.userId = results.rows[0].id;
-
-                        db.profileInfos(req.session.userId)
-                            .then((signIdResult) => {
-                                req.session.signatureId =
-                                    signIdResult.rows[0].id;
-
-                                res.redirect("/petition");
-                            })
-                            .catch((err) => {
-                                console.log("err", err);
-                                res.redirect("/petition");
-                            });
-                    } else {
-                        throw Error;
-                    }
-                })
-                .catch((err) => {
-                    res.render("login", {
-                        layout: "main",
-                        err,
-                    });
-                });
-        })
-        .catch((err) => {
-            // res.redirect("/login");
-            res.render("login", {
-                layout: "main",
-                err,
-            });
-        });
-});
-
-//////////////////////////
-//////// PROFILE: ////////
-//////////////////////////
-app.get("/profile", requireLoggedInUser, (req, res) => {
-    res.render("profile", {
-        layout: "main",
-    });
-});
-
-app.post("/profile", (req, res) => {
-    const age = req.body.age || 0;
-    const city = req.body.city;
-    let url = req.body.url;
-    const userId = req.session.userId;
-
-    if (url.startsWith("http://" || "https://") || url == "") {
-        db.enterProfileInfos(age, city, url, userId)
-            .then(() => {
-                res.redirect("/petition");
-            })
-            .catch((err) => {
-                console.log("ERR in POST: ", err);
-            });
-    } else if (url.startsWith("<") || typeof url !== "string") {
-        url = `http://${url}`;
-        // console.log("invalid str");
-        let attack = true;
-        res.render("profile", {
-            layout: "main",
-            attack,
-        });
-    } else {
-        url = `http://${url}`;
-        db.enterProfileInfos(age, city, url, userId)
-            .then(() => {
-                res.redirect("/petition");
-            })
-            .catch((err) => {
-                console.log("ERR in POST: ", err);
-            });
-    }
-});
-
-//////////////////////////
-////// PROFILE/EDIT: //////
-//////////////////////////
-app.get("/profile/edit", requireLoggedInUser, (req, res) => {
-    db.profileInfos(req.session.userId)
-        .then((results) => {
-            const userInfos = results["rows"][0];
-            res.render("editProfile", {
-                layout: "main",
-                fname: userInfos["First Name"],
-                lname: userInfos["Last Name"],
-                email: userInfos["email"],
-                age: userInfos["age"],
-                city: userInfos["city"],
-                url: userInfos["url"],
-            });
-        })
-
-        .catch((err) => {
-            console.log("ERR in GET: ", err);
-        });
-});
-
-app.post("/profile/edit", (req, res) => {
-    const firstName = req.body.fname;
-    const lastName = req.body.lname;
-    const email = req.body.email;
-    const password = req.body.password;
-    const age = req.body.age;
-    const city = req.body.city;
-    let url = req.body.url;
-    const userId = req.session.userId;
-
-    const checkLink = (str) => {
-        if (str.startsWith("http://" || "https://") || str == "") {
-            console.log("valid str");
-        } else if (str.startsWith("<") || typeof str !== "string") {
-            url = `http://${str}`;
-            // console.log("invalid str");
-            throw Error;
-        } else {
-            url = `http://${str}`;
-        }
-    };
-
-    if (password !== "") {
-        bc.hash(password)
-            .then((hashedPw) => {
-                db.updateUserAndPsw(
-                    firstName,
-                    lastName,
-                    email,
-                    hashedPw,
-                    userId
-                )
-                    .then(() => {
-                        checkLink(url);
-
-                        db.updateUserProfile(age, city, url, userId)
-                            .then(() => {
-                                res.redirect("/petition");
-                            })
-                            .catch((err) => {
-                                console.log("ERR in POST2: ", err);
-                            });
-                    })
-                    .catch((err) => {
-                        console.log("ERR in POST: ", err);
-                        let attack = true;
-                        res.render("editProfile", {
-                            layout: "main",
-                            attack,
-                            fname: firstName,
-                            lname: lastName,
-                            email: email,
-                            age: age,
-                            city: city,
-                        });
-                    });
-            })
-            .catch((err) => {
-                console.log("ERR in POST: ", err);
-            });
-    } else {
-        db.updateUser(firstName, lastName, email, userId)
-            .then(() => {
-                checkLink(url);
-
-                db.updateUserProfile(age, city, url, userId)
-                    .then(() => {
-                        res.redirect("/petition");
-                    })
-                    .catch((err) => {
-                        console.log("ERR in POST2: ", err);
-                    });
-            })
-            .catch((err) => {
-                console.log("ERR in POST: ", err);
-                let attack = true;
-                res.render("editProfile", {
-                    layout: "main",
-                    attack,
-                    fname: firstName,
-                    lname: lastName,
-                    email: email,
-                    age: age,
-                    city: city,
-                });
-            });
-    }
-});
 
 //////////////////////////
 //////// PETITION: ////////
