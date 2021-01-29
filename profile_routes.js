@@ -28,7 +28,11 @@ router.post("/profile", (req, res) => {
             .catch((err) => {
                 console.log("ERR in POST: ", err);
             });
-    } else if (url.startsWith("<") || typeof url !== "string") {
+    } else if (
+        url.startsWith("<") ||
+        url.endsWith(";" || ")") ||
+        typeof url !== "string"
+    ) {
         url = `http://${url}`;
         // console.log("invalid str");
         let attack = true;
@@ -86,7 +90,11 @@ router.post("/profile/edit", (req, res) => {
     const checkLink = (str) => {
         if (str.startsWith("http") || str == "") {
             console.log("valid str");
-        } else if (str.startsWith("<") || typeof str !== "string") {
+        } else if (
+            str.startsWith("<") ||
+            url.endsWith(";" || ")") ||
+            typeof str !== "string"
+        ) {
             url = `http://${str}`;
             // console.log("invalid str");
             throw Error;
