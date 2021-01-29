@@ -30,7 +30,8 @@ router.post("/profile", (req, res) => {
             });
     } else if (
         url.startsWith("<") ||
-        url.endsWith(";" || ")") ||
+        url.endsWith(";") ||
+        url.endsWith(")") ||
         typeof url !== "string"
     ) {
         url = `http://${url}`;
@@ -92,7 +93,8 @@ router.post("/profile/edit", (req, res) => {
             console.log("valid str");
         } else if (
             str.startsWith("<") ||
-            url.endsWith(";" || ")") ||
+            url.endsWith(";") ||
+            url.endsWith(")") ||
             typeof str !== "string"
         ) {
             url = `http://${str}`;
