@@ -69,6 +69,14 @@ h2 {
     margin-bottom: 10px;
 }
 
+p {
+    color: white;
+}
+
+.p2 {
+    color: rgb(95, 255, 80);
+}
+
 a {
     cursor: pointer;
     text-decoration: none;
